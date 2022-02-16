@@ -1,0 +1,92 @@
+version: "2.4"
+services:
+  broker01:
+    image: eclipse-temurin:17-jre-focal
+    restart: always
+    volumes:
+      - ./docker/kafka_2.13-2.8.1:/kafka
+    command: /kafka/bin/kafka-server-start.sh /kafka/config/server01.properties
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  broker02:
+    image: eclipse-temurin:17-jre-focal
+    restart: always
+    volumes:
+      - ./docker/kafka_2.13-2.8.1:/kafka
+    command: /kafka/bin/kafka-server-start.sh /kafka/config/server02.properties
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  broker03:
+    image: eclipse-temurin:17-jre-focal
+    restart: always
+    volumes:
+      - ./docker/kafka_2.13-2.8.1:/kafka
+    command: /kafka/bin/kafka-server-start.sh /kafka/config/server03.properties
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  comsumer01:
+    image: kafka-inspection:0.0.1
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  comsumer02:
+    image: kafka-inspection:0.0.1
+    restart: always
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  zoonavi:
+    image: elkozmon/zoonavigator:latest
+    restart: always
+    ports:
+      - 30001:9000
+    depends_on:
+      - zookeeper
+    networks:
+      - sandbox-net
+
+  zookeeper:
+    image: eclipse-temurin:17-jre-focal
+    restart: always
+    volumes:
+      - ./docker/kafka_2.13-2.8.1:/kafka
+    command: /kafka/bin/zookeeper-server-start.sh /kafka/config/zookeeper.properties
+    networks:
+      - sandbox-net
+
+  postgres:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+    networks:
+      - sandbox-net
+     
+  adminer:
+    image: adminer
+    restart: always
+    ports: 
+     - 30002:8080
+    networks:
+      - sandbox-net
+
+networks:
+    sandbox-net:
+      external: true
+
