@@ -31,7 +31,11 @@
    ```
    http://localhost:8080/swagger.html
    ```
-
+   GET http://localhost:8080/sendrequest を呼び出します。 
+   - testName：テストの試行ごとにつける名前です
+   - loopNum：メッセージを送信する回数です
+   - intervalMs：メッセージの送信間隔（ms）です
+   - exceptionOccur：メッセージ送信後に意図的に例外を発生させます。トランザクションロールバックの試験に用います。
 ### zookeeper
 1. ブラウザで以下のURLにアクセスする。
    ```
