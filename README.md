@@ -5,9 +5,14 @@
 - jdk17 が利用できること
 
 ## 環境構築
+1. リポジトリのクローン
+   ``` 
+   git clone https://github.com/u032582/kafka-inspection.git
+   ``` 
 1. 検証コードのイメージをビルドする  
    ``` 
-   ./gradlew clean bootBuildImage
+   cd kafka-inspection
+   ./gradlew bootBuildImage
    ```
 
  1. dockerネットワークを作成  
