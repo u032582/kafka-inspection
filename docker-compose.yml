@@ -5,6 +5,8 @@ services:
     restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
+    environment:
+      - LOG_DIR=/var/log/kafka
     command: /kafka/bin/kafka-server-start.sh /kafka/config/server01.properties
     depends_on:
       - zookeeper
@@ -16,6 +18,8 @@ services:
     restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
+    environment:
+      - LOG_DIR=/var/log/kafka
     command: /kafka/bin/kafka-server-start.sh /kafka/config/server02.properties
     depends_on:
       - zookeeper
@@ -27,27 +31,40 @@ services:
     restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
+    environment:
+      - LOG_DIR=/var/log/kafka
     command: /kafka/bin/kafka-server-start.sh /kafka/config/server03.properties
     depends_on:
       - zookeeper
     networks:
       - sandbox-net
 
-  comsumer01:
+  consumer01:
     image: kafka-inspection:0.0.1
     restart: always
-    ports:
-      - 8080:8080
-    depends_on:
-      - zookeeper
+    environment:
+      - SPRING_PROFILES_ACTIVE=consumer
+      - JAVA_OPTS=-Dapp.container-name=consumer01 -Dapp.is-fail-consumer=false -Dapp.topic-replacas=2
     networks:
       - sandbox-net
 
-  comsumer02:
+  consumer02:
     image: kafka-inspection:0.0.1
     restart: always
-    depends_on:
-      - zookeeper
+    environment:
+      - SPRING_PROFILES_ACTIVE=consumer
+      - JAVA_OPTS=-Dapp.container-name=consumer02 -Dapp.topic-replacas=2
+    networks:
+      - sandbox-net
+
+  producer:
+    image: kafka-inspection:0.0.1
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=producer
+      - JAVA_OPTS=-Dapp.container-name=producer -Dapp.topic-replacas=2
+    ports:
+      - 8080:8080
     networks:
       - sandbox-net
 
@@ -66,6 +83,8 @@ services:
     restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
+    environment:
+      - LOG_DIR=/var/log/kafka
     command: /kafka/bin/zookeeper-server-start.sh /kafka/config/zookeeper.properties
     networks:
       - sandbox-net
@@ -77,16 +96,15 @@ services:
       POSTGRES_PASSWORD: password
     networks:
       - sandbox-net
-     
+
   adminer:
     image: adminer
     restart: always
-    ports: 
-     - 30002:8080
+    ports:
+      - 30002:8080
     networks:
       - sandbox-net
 
 networks:
-    sandbox-net:
-      external: true
-
+  sandbox-net:
+    external: true

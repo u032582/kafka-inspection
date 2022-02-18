@@ -33,7 +33,7 @@ public class Request {
 	private long id;
 	@Column(columnDefinition = "VARCHAR")
 	private UUID uuid;
-
+	private String containerName;
 	private long loopIndex;
 
 	@Column(columnDefinition = "TEXT")

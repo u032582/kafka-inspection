@@ -13,7 +13,6 @@ import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(indexes = @Index(columnList = "uuid"), uniqueConstraints = { @UniqueConstraint(columnNames = { "uuid" }) })
+@Table(indexes = @Index(columnList = "uuid"))
 public class Result {
 	@Id
 	@SequenceGenerator(name = "results_id_seq")
@@ -33,6 +32,10 @@ public class Result {
 	private long id;
 	@Column(columnDefinition = "VARCHAR")
 	private UUID uuid;
+	private String containerName;
+	private String recieveId;
+	private int recieveLength;
+	private int recieveIndex;
 
 	@Column(columnDefinition = "TEXT")
 	private String testName;
