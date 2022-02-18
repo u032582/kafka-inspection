@@ -2,7 +2,6 @@ version: "2.4"
 services:
   broker01:
     image: eclipse-temurin:17-jre-focal
-    restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
     environment:
@@ -15,7 +14,6 @@ services:
 
   broker02:
     image: eclipse-temurin:17-jre-focal
-    restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
     environment:
@@ -28,7 +26,6 @@ services:
 
   broker03:
     image: eclipse-temurin:17-jre-focal
-    restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
     environment:
@@ -41,7 +38,6 @@ services:
 
   consumer01:
     image: kafka-inspection:0.0.1
-    restart: always
     environment:
       - SPRING_PROFILES_ACTIVE=consumer
       - JAVA_OPTS=-Dapp.container-name=consumer01 -Dapp.is-fail-consumer=false -Dapp.topic-replacas=2
@@ -50,7 +46,6 @@ services:
 
   consumer02:
     image: kafka-inspection:0.0.1
-    restart: always
     environment:
       - SPRING_PROFILES_ACTIVE=consumer
       - JAVA_OPTS=-Dapp.container-name=consumer02 -Dapp.topic-replacas=2
@@ -59,7 +54,6 @@ services:
 
   producer:
     image: kafka-inspection:0.0.1
-    restart: always
     environment:
       - SPRING_PROFILES_ACTIVE=producer
       - JAVA_OPTS=-Dapp.container-name=producer -Dapp.topic-replacas=2
@@ -70,7 +64,6 @@ services:
 
   zoonavi:
     image: elkozmon/zoonavigator:latest
-    restart: always
     ports:
       - 30001:9000
     depends_on:
@@ -80,7 +73,6 @@ services:
 
   zookeeper:
     image: eclipse-temurin:17-jre-focal
-    restart: always
     volumes:
       - ./docker/kafka_2.13-2.8.1:/kafka
     environment:
@@ -91,7 +83,6 @@ services:
 
   postgres:
     image: postgres:13
-    restart: always
     environment:
       POSTGRES_PASSWORD: password
     networks:
@@ -100,7 +91,6 @@ services:
   adminer:
     image: adminer:4.7.7-standalone
     command: php -S 0.0.0.0:8080 -t /var/www/html
-    restart: always
     depends_on:
       - postgres
     ports:

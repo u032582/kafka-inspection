@@ -121,9 +121,11 @@
    docker-compose logs -f comsumer02
    ```
 
-
-## 環境削除
-1. docker-compose起動
+## Appendix
+### 環境削除
+1. docker-compose 削除
    ```
    docker-compose down
    ```
+### spring kafka のspring bootプロパティ
+- https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.integration
