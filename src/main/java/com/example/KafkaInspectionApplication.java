@@ -11,7 +11,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @SpringBootApplication
+@EnableTransactionManagement
 public class KafkaInspectionApplication {
 	@Autowired
 	private ProducerBlogic blogic;
@@ -57,7 +60,9 @@ public class KafkaInspectionApplication {
 	 */
 	@Bean
 	public NewTopic topic() {
-		return TopicBuilder.name(ConsumerBlogic.TOPIC_NAME).partitions(partitions).replicas(replicas).build();
+		var config = Map.of("min.insync.replicas", "2");
+		return TopicBuilder.name(ConsumerBlogic.TOPIC_NAME).partitions(partitions).replicas(replicas).configs(config)
+				.build();
 	}
 
 	/**
@@ -68,14 +73,19 @@ public class KafkaInspectionApplication {
 	 * @param intervalMs
 	 * @param ex
 	 */
-	@Transactional(transactionManager = "kafkaTransactionManager")
+	@Transactional(transactionManager = "transactionManager", propagation = Propagation.REQUIRED)
 	@GetMapping("/sendrequest")
 	public void crateRequest(@RequestParam(name = "testName", defaultValue = "testcase01") String testName,
 			@RequestParam(name = "loopNum", defaultValue = "10") int loopNum,
 			@RequestParam(name = "intervalMs", defaultValue = "10") int intervalMs,
 			@RequestParam(name = "exceptionOccur", required = false, defaultValue = "false") Boolean ex,
 			@RequestParam(name = "exceptionOccurIndex", required = false, defaultValue = "1") int exIndex) {
-		blogic.send(testName, loopNum, intervalMs, ex, exIndex);
+		try {
+			blogic.send(testName, loopNum, intervalMs, ex, exIndex);
+		} catch (Exception e) {
+			log.error("", e);
+			throw e;
+		}
 	}
 
 }

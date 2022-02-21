@@ -40,7 +40,7 @@ services:
     image: kafka-inspection:0.0.1
     environment:
       - SPRING_PROFILES_ACTIVE=consumer
-      - JAVA_OPTS=-Dapp.container-name=consumer01 -Dapp.is-fail-consumer=false -Dapp.topic-replacas=2
+      - JAVA_OPTS=-Dapp.container-name=consumer01 -Dapp.is-fail-consumer=false
     networks:
       - sandbox-net
 
@@ -48,7 +48,7 @@ services:
     image: kafka-inspection:0.0.1
     environment:
       - SPRING_PROFILES_ACTIVE=consumer
-      - JAVA_OPTS=-Dapp.container-name=consumer02 -Dapp.topic-replacas=2
+      - JAVA_OPTS=-Dapp.container-name=consumer02
     networks:
       - sandbox-net
 
@@ -56,7 +56,7 @@ services:
     image: kafka-inspection:0.0.1
     environment:
       - SPRING_PROFILES_ACTIVE=producer
-      - JAVA_OPTS=-Dapp.container-name=producer -Dapp.topic-replacas=2
+      - JAVA_OPTS=-Dapp.container-name=producer
     ports:
       - 8080:8080
     networks:

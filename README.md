@@ -121,11 +121,79 @@
    docker-compose logs -f comsumer02
    ```
 
-## Appendix
 ### 環境削除
 1. docker-compose 削除
    ```
    docker-compose down
    ```
-### spring kafka のspring bootプロパティ
+## Appendix
+### 検証したソフトウェアバージョン
+- Kafka ブローカー：2.13-2.8.1
+- spring kafka：2.8.2
+- kafka-client：3.0.0
+
+### 検証で変更した server.properties
+```
+# コンシューマのオフセットを保存するトピックのレプリカ数
+offsets.topic.replication.factor=2
+
+# トランザクションを保存するトピックのレプリカ数
+transaction.state.log.replication.factor=2
+
+# トランザクションを保存するトピックの最小InSyncReplica数。
+# この値以下にISRが小さくなるとProducerからの送信がブロックされる
+# たとえば設定値が1の場合、ISRが1になると送信できない。
+transaction.state.log.min.isr=1
+
+# トランザクションのタイムアウト時間
+transaction.timeout.ms=600000
+
+# Topicを削除可能とするか
+delete.topic.enable=true
+
+# デフォルトのinsync.replicas最少数
+# コンシューマのオフセットを保存するトピックにもこの値が効く
+min.insync.replicas=2
+
+# ブローカーのID。ブローカーごとにユニークにする必要がある
+broker.id=1
+
+# zookeeprに登録するブローカのエンドポイント。クライアントから解決可能なアドレスである必要がある。
+listeners=PLAINTEXT://192.168.100.168:9092
+
+# デフォルトのトピックパーティション数。ブローカ台数に合わせてお好みで。
+num.partitions=32
+
+# zookeeperのエンドポイント。ブローカーから解決可能なアドレスである必要がある。
+zookeeper.connect=192.168.100.174:2181
+```
+
+### spring kafka のspring bootプロパティ一覧
 - https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.integration
+
+### ブローカの追加とパーティションのリバランス
+ブローカーの追加ではTopicのパーティションリバランスは発生しない。以下の手順で明示的にリバランスする必要がある。
+
+1. 以下のファイルを作成する。ファイル名は`topic-move.json`とした。リバランスしたいトピック名（以下では`quickstart-events`）をtopicsに羅列する。  
+   ```
+   {"topics":
+      [{"topic": "quickstart-events"}],
+      "version":1
+   }
+   ```
+1. 以下のコマンドを実行し、パーティションのバランス設定を生成する。--broker-listに配置したいbroker のidをリストする。
+   ```
+   kafka/bin/kafka-reassign-partitions.sh --topics-to-move-json-file topic-move.json --broker-list 1,2,3,4 --bootstrap-server 192.168.100.168:9092 --generate 
+   ```
+   以下のような出力となるので、`Proposed partition reassignment configuration` 以下のJSONを ファイルに保存する。今回は`new_parition.json`とした。
+   ```
+   Current partition replica assignment
+   {"version":1,"partitions":[{"topic":"quickstart-events","partition":0,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":1,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":2,"replicas":[1,4,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":3,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":4,"replicas":[3,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":5,"replicas":[4,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":6,"replicas":[1,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":7,"replicas":[2,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":8,"replicas":[3,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":9,"replicas":[4,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":10,"replicas":[1,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":11,"replicas":[2,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":12,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":13,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":14,"replicas":[1,4,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":15,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":16,"replicas":[3,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":17,"replicas":[4,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":18,"replicas":[1,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":19,"replicas":[2,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":20,"replicas":[3,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":21,"replicas":[4,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":22,"replicas":[1,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":23,"replicas":[2,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":24,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":25,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":26,"replicas":[1,4,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":27,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":28,"replicas":[3,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":29,"replicas":[4,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":30,"replicas":[1,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":31,"replicas":[2,3,4],"log_dirs":["any","any","any"]}]}
+
+   Proposed partition reassignment configuration
+   {"version":1,"partitions":[{"topic":"quickstart-events","partition":0,"replicas":[2,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":1,"replicas":[3,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":2,"replicas":[4,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":3,"replicas":[1,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":4,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":5,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":6,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":7,"replicas":[1,4,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":8,"replicas":[2,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":9,"replicas":[3,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":10,"replicas":[4,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":11,"replicas":[1,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":12,"replicas":[2,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":13,"replicas":[3,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":14,"replicas":[4,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":15,"replicas":[1,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":16,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":17,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":18,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":19,"replicas":[1,4,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":20,"replicas":[2,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":21,"replicas":[3,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":22,"replicas":[4,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":23,"replicas":[1,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":24,"replicas":[2,4,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":25,"replicas":[3,1,2],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":26,"replicas":[4,2,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":27,"replicas":[1,3,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":28,"replicas":[2,1,3],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":29,"replicas":[3,2,4],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":30,"replicas":[4,3,1],"log_dirs":["any","any","any"]},{"topic":"quickstart-events","partition":31,"replicas":[1,4,2],"log_dirs":["any","any","any"]}]}
+   ```
+1. 以下のコマンドを実行し、パーティションのリバランスを実施する。
+   ```
+   kafka/bin/kafka-reassign-partitions.sh --reassignment-json-file new_parition.json --bootstrap-server 192.168.100.168:9092 --execute
+   ```

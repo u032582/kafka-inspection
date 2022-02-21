@@ -23,7 +23,7 @@ public class ProducerBlogic {
 	private KafkaTemplate<String, Request> producer;
 	private String containerName;
 
-	@Transactional(transactionManager = "transactionManager")
+	@Transactional(transactionManager = "kafkaTransactionManager")
 	public void send(String testName, int loopNum, long intervalMs, boolean ex, int exIndex) {
 		for (int i = 1; i <= loopNum; i++) {
 			var req = Request.builder().containerName(containerName)
