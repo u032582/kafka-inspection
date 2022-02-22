@@ -159,13 +159,13 @@ min.insync.replicas=2
 broker.id=1
 
 # zookeeprに登録するブローカのエンドポイント。クライアントから解決可能なアドレスである必要がある。
-listeners=PLAINTEXT://192.168.100.168:9092
+listeners=PLAINTEXT://broke01:9092
 
 # デフォルトのトピックパーティション数。ブローカ台数に合わせてお好みで。
 num.partitions=32
 
 # zookeeperのエンドポイント。ブローカーから解決可能なアドレスである必要がある。
-zookeeper.connect=192.168.100.174:2181
+zookeeper.connect=zookeeper:2181
 ```
 
 ### spring kafka のspring bootプロパティ一覧
@@ -183,7 +183,7 @@ zookeeper.connect=192.168.100.174:2181
    ```
 1. 以下のコマンドを実行し、パーティションのバランス設定を生成する。--broker-listに配置したいbroker のidをリストする。
    ```
-   kafka/bin/kafka-reassign-partitions.sh --topics-to-move-json-file topic-move.json --broker-list 1,2,3,4 --bootstrap-server 192.168.100.168:9092 --generate 
+   kafka/bin/kafka-reassign-partitions.sh --topics-to-move-json-file topic-move.json --broker-list 1,2,3,4 --bootstrap-server broker01:9092 --generate 
    ```
    以下のような出力となるので、`Proposed partition reassignment configuration` 以下のJSONを ファイルに保存する。今回は`new_parition.json`とした。
    ```
@@ -195,5 +195,5 @@ zookeeper.connect=192.168.100.174:2181
    ```
 1. 以下のコマンドを実行し、パーティションのリバランスを実施する。
    ```
-   kafka/bin/kafka-reassign-partitions.sh --reassignment-json-file new_parition.json --bootstrap-server 192.168.100.168:9092 --execute
+   kafka/bin/kafka-reassign-partitions.sh --reassignment-json-file new_parition.json --bootstrap-server broker01:9092 --execute
    ```
